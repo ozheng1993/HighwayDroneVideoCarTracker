@@ -36,30 +36,30 @@ int xLoc=0;
 int yLoc=0;
 int xLast=0;
 int yLast=0;
-int xCurrent=0;
-int yCurrent=0;
-
-
-
 int roix=0;
 int roiy=0;
+int roiWidth=0;
+int roiHeight=0;
 
-  ofstream outfile;
+ofstream outfile;
 string frameNumberString;
 string fpsNumberString;
 string timeNumberString;
 Mat mytemplate;
+Mat mytemplate2;
 double timeFrame=0.0;
+bool framePuse=false;
 
 ///------- template matching -----------------------------------------------------------------------------------------------
 
 Mat TplMatch( Mat &img, Mat &mytemplate )
 {
     Mat result;
-   Rect region_of_interest = Rect(roix-40,roiy-35, 100, 100);
-   cout<<"roix"<<roix;
-   cout<<"roiy"<<roiy<<endl;;
+   Rect region_of_interest = Rect(roix-roiWidth*2,roiy-roiHeight*2, roiWidth*5, roiHeight*5);
+   //cout<<"roix"<<roix;
+   //cout<<"roiy"<<roiy<<endl;;
    imshow("image roi", img(region_of_interest));
+  
     matchTemplate( img(region_of_interest), mytemplate, result, CV_TM_SQDIFF_NORMED );
     normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
     return result;
@@ -78,13 +78,13 @@ Point minmax( Mat &result )
     return matchLoc;
 }
 
-
 ///------- tracking --------------------------------------------------------------------------------------------------------
 
 void track()
 {
     if (select_flag)
     {
+
         //roiImg.copyTo(mytemplate);
         //         select_flag = false;
         go_fast = true;
@@ -95,38 +95,41 @@ void track()
     Mat result  =  TplMatch( img, mytemplate );
     Point match =  minmax( result );
 
-
-    match.x+=(roix-40);
-    match.y+=(roiy-35);
-    cout<<sqrt(abs(xLast-match.x)^2+abs(yLast-match.y)^2)<<endl;
+    //re position roi
+    match.x+=(roix-roiWidth*2);
+    match.y+=(roiy-roiHeight*2);
+    //cout<<sqrt(abs(xLast-match.x)^2+abs(yLast-match.y)^2)<<endl;
     if(start==false)
     {
         start=true;
         xLast=match.x;
         yLast=match.y;
     }
-    else if(sqrt(abs(xLast-match.x)^2+abs(yLast-match.y)^2)<2)
+    // else if(sqrt(abs(xLast-match.x)^2+abs(yLast-match.y)^2)<2)
 
-    {
+    // {
 		roix=match.x;
         roiy= match.y;
  		xLast=match.x;
     	yLast=match.y;
-    	rectangle( img, match, Point( match.x + mytemplate.cols , match.y + mytemplate.rows ), CV_RGB(255, 255, 255), 0.5 );
 
-    	rectangle( img,  Point( roix-50,roiy-50 ), Point( roix+50,roiy+50 ), CV_RGB(255, 255, 255), 0.5 );
-      
-      string displayInfor="1";
-       putText(img, displayInfor.c_str(), cv::Point(match.x + mytemplate.cols+3 , match.y + mytemplate.rows),
+
+  //    mytemplate2= img(Rect(match.x, match.y,  mytemplate.cols , mytemplate.rows ));
+  //       //roiImg.copyTo(mytemplate);
+  // imshow("mytemplate2", mytemplate2);
+    	rectangle( img, match, Point( match.x + mytemplate.cols , match.y + mytemplate.rows ), CV_RGB(0, 255, 0), 0.5 );
+    	rectangle( img,  Point( roix-roiWidth*2,roiy-roiHeight*2 ), Point( roix+roiWidth*3,roiy+roiHeight*3 ), CV_RGB(255, 0, 0), 0.5 );
+        string displayInfor="1";
+        putText(img, displayInfor.c_str(), cv::Point(match.x + mytemplate.cols+3 , match.y + mytemplate.rows),
                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-    }
-    else
-    {
-    rectangle( img, match, Point( match.x + mytemplate.cols , match.y + mytemplate.rows ), CV_RGB(0, 0, 255), 0.5 );
-      string displayInfor="wrong";
-       putText(img, displayInfor.c_str(), cv::Point(match.x + mytemplate.cols+3 , match.y + mytemplate.rows),
-               FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-    }
+    // }
+    // else
+    // {
+    // rectangle( img, match, Point( match.x + mytemplate.cols , match.y + mytemplate.rows ), CV_RGB(0, 0, 255), 0.5 );
+    //   string displayInfor="wrong";
+    //    putText(img, displayInfor.c_str(), cv::Point(match.x + mytemplate.cols+3 , match.y + mytemplate.rows),
+    //            FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+    // }
     // xCurrent=match.x-xLast;
     // yCurrent=match.y-yLast;
     
@@ -138,11 +141,11 @@ void track()
 // //    }
    
    
-//    /// latest match is the new template
-//    Rect ROI = cv::Rect( match.x, match.y, mytemplate.cols, mytemplate.rows );
-//    roiImg = img( ROI );
-//    roiImg.copyTo(mytemplate);
-//    imshow( "roiImg", roiImg ); //waitKey(0);
+   // /// latest match is the new template
+   // Rect ROI = cv::Rect( match.x, match.y, mytemplate.cols, mytemplate.rows );
+   // roiImg = img( ROI );
+   // roiImg.copyTo(mytemplate);
+   // imshow( "roiImg", roiImg ); //waitKey(0);
 }
 
 
@@ -172,10 +175,16 @@ void mouseHandler(int event, int x, int y, int flags, void *param)
         rect = Rect(point1.x, point1.y, x - point1.x, y - point1.y);
         roix=point1.x;
         roiy= point1.y;
+
+        roiWidth=x - point1.x;
+        roiHeight=y - point1.y;
+rectangle( img,  Point( point1.x, point1.y), Point( x,y ), CV_RGB(0, 255, 0), 0.5 );
+      
+
         drag = 0;
         roiImg = img(rect);
         roiImg.copyTo(mytemplate);
-        //  imshow("MOUSE roiImg", roiImg); waitKey(0);
+        //imshow("MOUSE roiImg", roiImg); waitKey(0);
     }
     
     if (event == CV_EVENT_LBUTTONUP)
@@ -238,54 +247,72 @@ int main( int argc, char** argv ){
     
     cap >> img;
     
-    GaussianBlur( img, img, Size(7,7), 3.0 );
+    //GaussianBlur( img, img, Size(7,7), 3.0 );
     imshow( "image", img );
     
-    while (1)
+    for(;;)
     {
-        cap >> img;
-        resize(img, img, Size(1920, 1080));
+        cout<<framePuse<<endl;
+   
+     //    if(framePuse)
+     //    {
+     //      //cvSetMouseCallback( "image", mouseHandler, NULL );
+     //        continue;
+     //    }
+        // else
+        // {
+         cap >> img;
+       //  resize(img, img, Size(1920, 1080));
         if ( img.empty() )
             break;
-       // GaussianBlur( img, img, Size(7,7), 3.0 );
-        stringstream ss;
-        stringstream st;
-        stringstream fps;
-        rectangle(img, cv::Point(10, 2), cv::Point(450,20),
-                  cv::Scalar(255,255,255), -1);
-        ss << cap.get(CAP_PROP_POS_FRAMES);
-        fps << cap.get(CAP_PROP_FPS);
-        st << cap.get( CAP_PROP_POS_MSEC);
-         frameNumberString = ss.str();
-        fpsNumberString = fps.str();
-         timeNumberString = st.str();
-        timeFrame=stod(timeNumberString)/1000;
-        //  string timeNumberString = st.str();
-        putText(img, frameNumberString.c_str(), cv::Point(15, 15),
-                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-        putText(img, fpsNumberString.c_str(), cv::Point(70, 15),
-                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-        putText(img, to_string(timeFrame), cv::Point(190, 15),
-                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-        // stop the program if no more images
-        // Flip the frame horizontally and add blur
-        //cv::flip( img, img, 1 );
+          if (waitKey(1)==27)
+        {
+            framePuse=!framePuse;
+        }
+
+       // // GaussianBlur( img, img, Size(7,7), 3.0 );
+       //  stringstream ss;
+       //  stringstream st;
+       //  stringstream fps;
+       //  rectangle(img, cv::Point(10, 2), cv::Point(450,20),
+       //            cv::Scalar(255,255,255), -1);
+       //  ss << cap.get(CAP_PROP_POS_FRAMES);
+       //  fps << cap.get(CAP_PROP_FPS);
+       //  st << cap.get( CAP_PROP_POS_MSEC);
+       //   frameNumberString = ss.str();
+       //  fpsNumberString = fps.str();
+       //   timeNumberString = st.str();
+       //  timeFrame=stod(timeNumberString)/1000;
+       //  //  string timeNumberString = st.str();
+       //  putText(img, frameNumberString.c_str(), cv::Point(15, 15),
+       //          FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+       //  putText(img, fpsNumberString.c_str(), cv::Point(70, 15),
+       //          FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+       //  putText(img, to_string(timeFrame), cv::Point(190, 15),
+       //          FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+       //  // stop the program if no more images
+       //  // Flip the frame horizontally and add blur
+       //  //cv::flip( img, img, 1 );
         
         
-        if ( rect.width == 0 && rect.height == 0 )
-            cvSetMouseCallback( "image", mouseHandler, NULL );
-        else
-            track();
+       //  if ( rect.width == 0 && rect.height == 0 )
+       //      cvSetMouseCallback( "image", mouseHandler, NULL );
+       //  else
+       //      track();
         
-        imshow("image", img);
-        //  waitKey(100);   k = waitKey(75);
-        k = waitKey(go_fast ? 30 : 10000);
+        imshow("image2", img);
+       //  //  waitKey(100);   k = waitKey(75);
+        //k = waitKey(go_fast ? 30 : 10000);
+        //}
+
+
+        waitKey(0)
         
         
         
         
-        if (k == 27)
-            break;
+
+            // break;
     }
     //delete capture object
     cap.release();
