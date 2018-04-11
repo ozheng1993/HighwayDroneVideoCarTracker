@@ -376,7 +376,13 @@ int main( int argc, char** argv ){
     time_t rawtime;
     struct tm * timeinfo;
     char buffer[80];
-    
+        if(argc>2)
+    {
+        Mat framePre;
+        for( int x = 0; x < stoi(argv[2]); x++ ) {
+            cap>>framePre;
+        }
+    }
     time (&rawtime);
     timeinfo = localtime(&rawtime);
     
