@@ -43,6 +43,8 @@ int roiWidth=0;
 int roiHeight=0;
 int screenWidth=1920;
 int screenHeight=1080;
+int startLine=1920;
+int endLine=1700;
 ofstream outfile;
 string frameNumberString;
 string fpsNumberString;
@@ -139,14 +141,14 @@ void track(int index)
     int tmpRoiW=0;
     int tmpRoiH=0;
     cout<<"carX[index]"<<carX[index]<<endl;
-    if(carX[index]+carWidth[index]>=screenWidth||carX[index]<=carWidth[index])
+    if(carX[index]+carWidth[index]>=endLine||carX[index]<=carWidth[index])
     {
         cout<<"finished"<<endl;
         carStatus[index]=3;
        
     }
     //finishe dete
-    if((carX[index]+carWidth[index]*3)<screenWidth&&(carX[index]-carWidth[index]*2)>0)
+    if((carX[index]+carWidth[index]*3)<endLine&&(carX[index]-carWidth[index]*2)>0)
     {
         cout<<"normal roi"<<endl;
         tmpRoiX=carX[index]-carWidth[index]*2;
@@ -169,13 +171,13 @@ void track(int index)
             
            // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
         }
-        else if((carX[index]+carWidth[index]*3)>=screenWidth)
+        else if((carX[index]+carWidth[index]*3)>=endLine)
         {
             cout<<"right roi"<<endl;
           
             tmpRoiX=carX[index]-carWidth[index]*2;
             tmpRoiY=carY[index]-carHeight[index]*2;
-            tmpRoiW=screenWidth-carX[index]+carWidth[index]*2;
+            tmpRoiW=endLine-carX[index]+carWidth[index]*2;
             tmpRoiH=carHeight[index]*5;
             //region_of_interest = Rect(1,y-height*2, width*7, height*5);
             
