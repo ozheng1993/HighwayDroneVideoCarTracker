@@ -436,7 +436,7 @@ int main( int argc, char** argv ){
              for(int i=0;i<carTemplates.size();i++)
              {
                  cout<<"start track "<<i<<" car"<<endl;
-                 if(carStatus[i]!=2&&carStatus[i]!=3)
+                 if(carStatus[i]!=2&&carStatus[i]!=3&&!carTemplates[i].empty())
                  {
                     track(i);
                      outfile<<frameNumberString<<","<<timeNumberString<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
