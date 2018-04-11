@@ -219,6 +219,14 @@ void track(int index)
 //        cout<<"car"<<index<<"lost"<<endl;
 //        carStatus[index]=2;
 //    }
+    
+    
+    if(carStatus[index]==4)
+    {
+        
+    }
+    
+    
     if(abs(carLastX[index]-match.x)<carWidth[index]&&abs(carLastY[index]-match.y)<carHeight[index])
 
      {
@@ -237,16 +245,16 @@ void track(int index)
      }
      else
      {
-         rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 0, 255), 0.5 );
-         rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(0, 0, 255), 0.5 );
-         string displayInfor=to_string(index)+"worng";
-         putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index] , match.y + carHeight[index]),
-                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-         carX[index]=match.x;
-         carY[index]= match.y;
-         carLastX[index]=match.x;
-         carLastY[index]=match.y;
-         carStatus[index]=4;
+        // rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 0, 255), 0.5 );
+//         rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(0, 0, 255), 0.5 );
+//         string displayInfor=to_string(index)+"worng";
+//         putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index] , match.y + carHeight[index]),
+//                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+//         carX[index]= carLastX[index];
+//         carY[index]= carLastY[index];
+//         carLastX[index]=match.x;
+//         carLastY[index]=match.y;
+         carStatus[index]=2;
      }
     // xCurrent=match.x-xLast;
     // yCurrent=match.y-yLast;
@@ -443,13 +451,17 @@ int main( int argc, char** argv ){
              for(int i=0;i<carTemplates.size();i++)
              {
                  string imname="car:"+to_string(i);
-                 
+                 if(carStatus[i]!=2&&carStatus[i]!=3)
+                 {
+                     rectangle(img, cv::Point(carX[i], carY[i]), cv::Point(carX[i]+carWidth[i],carY[i]+carHeight[i]),
+                               cv::Scalar(0,255,0), 1);
+                 }
                  //cout<<"car:"<<i<<"x:"<<carX[i]<<"y:"<<carY[i]<<"width"<<carWidth[i]<<"status"<<carStatus[i]<<endl;
                  
 //                 imshow(imname, carTemplates[i]);
 //                 moveWindow(imname, 20,50*i);
-                 rectangle(img, cv::Point(carX[i], carY[i]), cv::Point(carX[i]+carWidth[i],carY[i]+carHeight[i]),
-                           cv::Scalar(0,255,0), 1);
+//                 rectangle(img, cv::Point(carX[i], carY[i]), cv::Point(carX[i]+carWidth[i],carY[i]+carHeight[i]),
+//                           cv::Scalar(0,255,0), 1);
              }
              
          }
