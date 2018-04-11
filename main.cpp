@@ -105,7 +105,7 @@ Mat TplMatch( Mat &img, Mat &mytemplate,int index,int x,int y,int width,int heig
   
     matchTemplate( img(region_of_interest), mytemplate, result, CV_TM_SQDIFF_NORMED );
     normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
-    imshow(windowname, Roi);
+   // imshow(windowname, Roi);
     return result;
 }
 
