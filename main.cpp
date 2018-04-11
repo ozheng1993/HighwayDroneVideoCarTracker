@@ -214,11 +214,11 @@ void track(int index)
     }
     // else
     
-    if(abs(carLastX[index]-match.x)>carWidth[index]*5&&abs(carLastY[index]-match.y)>carHeight[index]*5)
-    {
-        cout<<"car"<<index<<"lost"<<endl;
-        carStatus[index]=2;
-    }
+//    if(abs(carLastX[index]-match.x)>carWidth[index]&&abs(carLastY[index]-match.y)>carHeight[index])
+//    {
+//        cout<<"car"<<index<<"lost"<<endl;
+//        carStatus[index]=2;
+//    }
     if(abs(carLastX[index]-match.x)<carWidth[index]&&abs(carLastY[index]-match.y)<carHeight[index])
 
      {
@@ -228,7 +228,7 @@ void track(int index)
   //       //roiImg.copyTo(mytemplate);
   // imshow("mytemplate2", mytemplate2);
     	rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 0.5 );
-    	rectangle( img,  Point( tmpRoiX,tmpRoiY), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH), CV_RGB(255, 0, 0), 0.5 );
+    	//rectangle( img,  Point( tmpRoiX,tmpRoiY), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH), CV_RGB(255, 0, 0), 0.5 );
         string displayInfor=to_string(index);
         putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index] , match.y + carHeight[index]),
                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
@@ -242,6 +242,11 @@ void track(int index)
          string displayInfor=to_string(index)+"worng";
          putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index] , match.y + carHeight[index]),
                  FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+         carX[index]=match.x;
+         carY[index]= match.y;
+         carLastX[index]=match.x;
+         carLastY[index]=match.y;
+         carStatus[index]=4;
      }
     // xCurrent=match.x-xLast;
     // yCurrent=match.y-yLast;
@@ -277,6 +282,16 @@ void mouseHandler(int event, int x, int y, int flags, void *param)
         point1 = Point(x, y);
         drag = 1;
         cout<<"start dray"<<x<<"|"<<y<<endl;
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     }
     
     if (event == CV_EVENT_MOUSEMOVE && drag)
@@ -293,11 +308,18 @@ void mouseHandler(int event, int x, int y, int flags, void *param)
     {
         point2 = Point(x, y);
         cout<<"finishe dray"<<x<<"|"<<y<<endl;
-        rect = Rect(point1.x, point1.y, x - point1.x, y - point1.y);
-        roix=point1.x;
-        roiy= point1.y;
-        roiWidth=x - point1.x;
-        roiHeight=y - point1.y;
+        if(x - point1.x>0&&y - point1.y>0)
+        {
+            rect = Rect(point1.x, point1.y, x - point1.x, y - point1.y);
+            roix=point1.x;
+            roiy= point1.y;
+            roiWidth=x - point1.x;
+            roiHeight=y - point1.y;
+        }
+        else{
+            cout<<"selsect again"<<endl;
+        }
+        
         //rectangle( img,  Point( point1.x, point1.y), Point( x,y ), CV_RGB(0, 255, 0), 0.5 );
       
 
@@ -357,7 +379,8 @@ int main( int argc, char** argv ){
     string fileName="./file/"+video+"_"+str+".csv";
   
     outfile.open(fileName);
-    outfile<<"frameNUM"<<","<<"time(s)"<<","<<"xdifferentfrom0"<<","<<"ydifferentfrom0"<<","<<"xdifferentfromlastx"<<","<<"ydifferentfromlasty"<<",";
+     outfile<<"frameNUM"<<","<<"time(s)"<<","<< "id"<<","<<"width"<<","<<"height"<<","<<"x"<<","<<"y"<<","<<"status"<<",";
+    outfile<<endl;
     if ( !cap.isOpened() )
     {   cout << "Unable to open video file" << endl;    return -1;    }
     /*
@@ -381,12 +404,33 @@ int main( int argc, char** argv ){
      //        continue;
                cap >> img;
               resize(img, img, Size(screenWidth, screenHeight));
+             stringstream ss;
+             stringstream st;
+             stringstream fps;
+             rectangle(img, cv::Point(10, 2), cv::Point(450,20),
+                       cv::Scalar(255,255,255), -1);
+             ss << cap.get(CAP_PROP_POS_FRAMES);
+             fps << cap.get(CAP_PROP_FPS);
+             st << cap.get( CAP_PROP_POS_MSEC);
+             frameNumberString = ss.str();
+             fpsNumberString = fps.str();
+             timeNumberString = st.str();
+             timeFrame=stod(timeNumberString)/1000;
+             //  string timeNumberString = st.str();
+             putText(img, frameNumberString.c_str(), cv::Point(15, 15),
+                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+             putText(img, fpsNumberString.c_str(), cv::Point(70, 15),
+                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+             putText(img, to_string(timeFrame), cv::Point(190, 15),
+                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
              for(int i=0;i<carTemplates.size();i++)
              {
                  cout<<"start track "<<i<<" car"<<endl;
                  if(carStatus[i]!=2&&carStatus[i]!=3)
                  {
                     track(i);
+                     outfile<<frameNumberString<<","<<timeNumberString<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
+                     outfile<<endl;
                  }
                  
                  
@@ -418,25 +462,7 @@ int main( int argc, char** argv ){
      
 
         // GaussianBlur( img, img, Size(7,7), 3.0 );
-        stringstream ss;
-        stringstream st;
-        stringstream fps;
-         rectangle(img, cv::Point(10, 2), cv::Point(450,20),
-                   cv::Scalar(255,255,255), -1);
-         ss << cap.get(CAP_PROP_POS_FRAMES);
-         fps << cap.get(CAP_PROP_FPS);
-         st << cap.get( CAP_PROP_POS_MSEC);
-          frameNumberString = ss.str();
-         fpsNumberString = fps.str();
-          timeNumberString = st.str();
-         timeFrame=stod(timeNumberString)/1000;
-         //  string timeNumberString = st.str();
-         putText(img, frameNumberString.c_str(), cv::Point(15, 15),
-                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-         putText(img, fpsNumberString.c_str(), cv::Point(70, 15),
-                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-         putText(img, to_string(timeFrame), cv::Point(190, 15),
-                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+        
          // stop the program if no more images
          // Flip the frame horizontally and add blur
          //cv::flip( img, img, 1 );
@@ -509,7 +535,7 @@ int main( int argc, char** argv ){
                 carHeight.pop_back();
                 carLastX.pop_back();
                 carLastY.pop_back();
-                carStatus.pop_back();//0=tag 1=tracking 2=lost 3= finised
+                carStatus.pop_back();//0=tag 1=tracking 2=lost 3= finised 4=search 5 =removed;
             }
             else{
                 cout<<"no more car:"<<carTemplates.size()<<endl;
