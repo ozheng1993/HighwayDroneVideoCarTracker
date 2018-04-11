@@ -248,71 +248,73 @@ int main( int argc, char** argv ){
     cap >> img;
     
     //GaussianBlur( img, img, Size(7,7), 3.0 );
-    imshow( "image", img );
+   imshow( "image", img );
     
-    for(;;)
+    while(waitKey(1)!='p')
     {
         cout<<framePuse<<endl;
    
-     //    if(framePuse)
-     //    {
+         if(!framePuse)
+         {
      //      //cvSetMouseCallback( "image", mouseHandler, NULL );
      //        continue;
-     //    }
+               cap >> img;
+         }
         // else
         // {
-         cap >> img;
+       
        //  resize(img, img, Size(1920, 1080));
         if ( img.empty() )
             break;
-          if (waitKey(1)==27)
+     
+
+        // GaussianBlur( img, img, Size(7,7), 3.0 );
+         stringstream ss;
+         stringstream st;
+         stringstream fps;
+         rectangle(img, cv::Point(10, 2), cv::Point(450,20),
+                   cv::Scalar(255,255,255), -1);
+         ss << cap.get(CAP_PROP_POS_FRAMES);
+         fps << cap.get(CAP_PROP_FPS);
+         st << cap.get( CAP_PROP_POS_MSEC);
+          frameNumberString = ss.str();
+         fpsNumberString = fps.str();
+          timeNumberString = st.str();
+         timeFrame=stod(timeNumberString)/1000;
+         //  string timeNumberString = st.str();
+         putText(img, frameNumberString.c_str(), cv::Point(15, 15),
+                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+         putText(img, fpsNumberString.c_str(), cv::Point(70, 15),
+                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+         putText(img, to_string(timeFrame), cv::Point(190, 15),
+                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+         // stop the program if no more images
+         // Flip the frame horizontally and add blur
+         //cv::flip( img, img, 1 );
+        
+        
+         if ( rect.width == 0 && rect.height == 0 )
+             cvSetMouseCallback( "image", mouseHandler, NULL );
+         else
+             track();
+        imshow("image", img);
+        //char key = waitKey(0);
+    
+        //imshow("image2", img);
+         //  waitKey(100);   k = waitKey(75);
+        k = waitKey(go_fast ? 30 : 10000);
+    
+
+        if(k == 'p')
         {
             framePuse=!framePuse;
         }
-
-       // // GaussianBlur( img, img, Size(7,7), 3.0 );
-       //  stringstream ss;
-       //  stringstream st;
-       //  stringstream fps;
-       //  rectangle(img, cv::Point(10, 2), cv::Point(450,20),
-       //            cv::Scalar(255,255,255), -1);
-       //  ss << cap.get(CAP_PROP_POS_FRAMES);
-       //  fps << cap.get(CAP_PROP_FPS);
-       //  st << cap.get( CAP_PROP_POS_MSEC);
-       //   frameNumberString = ss.str();
-       //  fpsNumberString = fps.str();
-       //   timeNumberString = st.str();
-       //  timeFrame=stod(timeNumberString)/1000;
-       //  //  string timeNumberString = st.str();
-       //  putText(img, frameNumberString.c_str(), cv::Point(15, 15),
-       //          FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-       //  putText(img, fpsNumberString.c_str(), cv::Point(70, 15),
-       //          FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-       //  putText(img, to_string(timeFrame), cv::Point(190, 15),
-       //          FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-       //  // stop the program if no more images
-       //  // Flip the frame horizontally and add blur
-       //  //cv::flip( img, img, 1 );
         
+        else if (k == 27)
+        {
+            break;
+        }
         
-       //  if ( rect.width == 0 && rect.height == 0 )
-       //      cvSetMouseCallback( "image", mouseHandler, NULL );
-       //  else
-       //      track();
-        
-        imshow("image2", img);
-       //  //  waitKey(100);   k = waitKey(75);
-        //k = waitKey(go_fast ? 30 : 10000);
-        //}
-
-
-        waitKey(0)
-        
-        
-        
-        
-
-            // break;
     }
     //delete capture object
     cap.release();
