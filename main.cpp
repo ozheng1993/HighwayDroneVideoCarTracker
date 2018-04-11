@@ -63,33 +63,33 @@ vector<int> carStatus;//0=tag 1=tracking 2=lost 3= finised
 
 ///------- template matching -----------------------------------------------------------------------------------------------
 
-Mat TplMatch( Mat &img, Mat &mytemplate,int index,int x,int y,int width,int height )
+Mat TplMatch( Mat &img, Mat &mytemplate,int index,int x,int y,int width,int height,int temRoiX,int temRoiY,int temRoiW,int temRoiH )
 {
     Mat result;
     Mat Roi;
     Rect region_of_interest;
-    if((x+width*3)<screenWidth&&(x-width*2)>0)
-    {
-        cout<<"normal roi"<<endl;
-       region_of_interest = Rect(x-width*2,y-height*2, width*5, height*5);
-    }
-    else
-    {
-        if((x-width*2)>0)
-        {
-            cout<<"right roi"<<endl;
-        region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
-        }
-        else if((x+width*3)<screenWidth)
-        {
-             cout<<"left roi"<<endl;
-             region_of_interest = Rect(1,y-height*2, width*7, height*5);
-            
-        }
-        
-    }
+//    if((x+width*3)<screenWidth&&(x-width*2)>0)
+//    {
+//        cout<<"normal roi"<<endl;
+//       region_of_interest = Rect(x-width*2,y-height*2, width*5, height*5);
+//    }
+//    else
+//    {
+//        if((x-width*2)>0)
+//        {
+//            cout<<"right roi"<<endl;
+//        region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
+//        }
+//        else if((x+width*3)<screenWidth)
+//        {
+//             cout<<"left roi"<<endl;
+//             region_of_interest = Rect(1,y-height*2, width*7, height*5);
+//
+//        }
+//
+//    }
     
-   
+   region_of_interest = Rect(temRoiX,temRoiY, temRoiW, temRoiH);
     
     
     
@@ -138,31 +138,45 @@ void track(int index)
     int tmpRoiY=0;
     int tmpRoiW=0;
     int tmpRoiH=0;
-    
+    cout<<"carX[index]"<<carX[index]<<endl;
+    if(carX[index]+carWidth[index]>=screenWidth||carX[index]<=carWidth[index])
+    {
+        cout<<"finished"<<endl;
+        carStatus[index]=3;
+       
+    }
     //finishe dete
-    if((carX[0]+carWidth[0]*3)<screenWidth&&(carX[0]-carWidth[0]*2)>0)
+    if((carX[index]+carWidth[index]*3)<screenWidth&&(carX[index]-carWidth[index]*2)>0)
     {
         cout<<"normal roi"<<endl;
-        tmpRoiX=carX[0]-carWidth[0]*2;
-        tmpRoiY=carX[0]+carWidth[0]*3;
-        tmpRoiW=carWidth[0]*5;
-        tmpRoiH=carHeight[0]*5;
+        tmpRoiX=carX[index]-carWidth[index]*2;
+        tmpRoiY=carY[index]-carHeight[index]*2;
+        tmpRoiW=carWidth[index]*5;
+        tmpRoiH=carHeight[index]*5;
+        cout<<"tmpRoiX"<<tmpRoiX<<endl;
         //region_of_interest = Rect(x-width*2,y-height*2, width*5, height*5);
     }
     else
     {
-        if((carX[0]-carWidth[0]*2)>0)
+        if((carX[index]-carWidth[index]*2)<0)
         {
-            cout<<"right roi"<<endl;
-            tmpRoiX=carX[0]-carWidth[0]*2;
-            tmpRoiY=carX[0]+carWidth[0]*3;
-            tmpRoiW=screenWidth-(carX[0]-carWidth[0]*2);
-            tmpRoiH=carHeight[0]*5;
+            //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
+            cout<<"left roi"<<endl;
+            tmpRoiX=0;
+            tmpRoiY=carY[index]-carHeight[index]*2;
+            tmpRoiW=carX[index]+carWidth[index]*2;
+            tmpRoiH=carHeight[index]*5;
+            
            // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
         }
-        else if((carX[0]+carWidth[0]*3)<screenWidth)
+        else if((carX[index]+carWidth[index]*3)>=screenWidth)
         {
-            cout<<"left roi"<<endl;
+            cout<<"right roi"<<endl;
+          
+            tmpRoiX=carX[index]-carWidth[index]*2;
+            tmpRoiY=carY[index]-carHeight[index]*2;
+            tmpRoiW=screenWidth-carX[index]+carWidth[index]*2;
+            tmpRoiH=carHeight[index]*5;
             //region_of_interest = Rect(1,y-height*2, width*7, height*5);
             
         }
@@ -185,7 +199,7 @@ void track(int index)
     
     
     //     imshow( "mytemplate", mytemplate ); waitKey(0);
-    Mat result  =  TplMatch( img, carTemplates[index],index,carX[index],carY[index],carWidth[index],carHeight[index] );
+    Mat result  =  TplMatch( img, carTemplates[index],index,carX[index],carY[index],carWidth[index],carHeight[index], tmpRoiX,tmpRoiY,tmpRoiW,tmpRoiH);
     Point match =  minmax( result );
 
     //re position roi
@@ -214,7 +228,7 @@ void track(int index)
   //       //roiImg.copyTo(mytemplate);
   // imshow("mytemplate2", mytemplate2);
     	rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 0.5 );
-    	rectangle( img,  Point( carX[index]-carWidth[index]*2,carY[index]-carHeight[index]*2 ), Point( carX[index]+carWidth[index]*3,carY[index]+carHeight[index]*3 ), CV_RGB(255, 0, 0), 0.5 );
+    	rectangle( img,  Point( tmpRoiX,tmpRoiY), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH), CV_RGB(255, 0, 0), 0.5 );
         string displayInfor=to_string(index);
         putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index] , match.y + carHeight[index]),
                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
@@ -224,7 +238,7 @@ void track(int index)
      else
      {
          rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 0, 255), 0.5 );
-         rectangle( img,  Point( carX[index]-carWidth[index]*2,carY[index]-carHeight[index]*2 ), Point( carX[index]+carWidth[index]*3,carY[index]+carHeight[index]*3 ), CV_RGB(0, 0, 255), 0.5 );
+         rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(0, 0, 255), 0.5 );
          string displayInfor=to_string(index)+"worng";
          putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index] , match.y + carHeight[index]),
                  FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
@@ -355,7 +369,7 @@ int main( int argc, char** argv ){
     
     //GaussianBlur( img, img, Size(7,7), 3.0 );
    imshow( "image", img );
-     resize(img, img, Size(screenWidth, screenHeight));
+    resize(img, img, Size(screenWidth, screenHeight));
     while(1)
     {
         //cout<<framePuse<<endl;
@@ -370,7 +384,7 @@ int main( int argc, char** argv ){
              for(int i=0;i<carTemplates.size();i++)
              {
                  cout<<"start track "<<i<<" car"<<endl;
-                 if(carStatus[i]!=2||carStatus[i]!=3)
+                 if(carStatus[i]!=2&&carStatus[i]!=3)
                  {
                     track(i);
                  }
