@@ -422,6 +422,17 @@ int main( int argc, char** argv ){
     ///open video file
     std::string video = argv[1];
     VideoCapture cap(video);
+    
+    
+    if(argc>2)
+    {
+        Mat framePre;
+        for( int x = 0; x < stoi(argv[2]); x++ ) {
+            cap>>framePre;
+        }
+    }
+    
+    
     time_t rawtime;
     struct tm * timeinfo;
     char buffer[80];
