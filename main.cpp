@@ -63,6 +63,16 @@ vector<int> carWidth;
 vector<int> carHeight;
 vector<int> carStatus;//0=tag 1=tracking 2=lost 3= finised
 
+
+double findDistanceBetweenTwoPoint(int x1,int y1,int x2,int y2)
+{
+    
+    double distanceX=abs(x1-x2);
+    double distanceY=abs(y1-y2);
+    double distance=sqrt(distanceX*distanceX+distanceY*distanceY);
+    return distance;
+    
+}
 ///------- template matching -----------------------------------------------------------------------------------------------
 
 Mat TplMatch( Mat &img, Mat &mytemplate,int index,int x,int y,int width,int height,int temRoiX,int temRoiY,int temRoiW,int temRoiH )
@@ -140,7 +150,7 @@ void track(int index)
     int tmpRoiY=0;
     int tmpRoiW=0;
     int tmpRoiH=0;
-    cout<<"carX[index]"<<carX[index]<<endl;
+   // cout<<"carX[index]"<<carX[index]<<endl;
     if(carX[index]+carWidth[index]>=endLine||carX[index]<=carWidth[index])
     {
         cout<<"finished"<<endl;
@@ -150,12 +160,12 @@ void track(int index)
     //finishe dete
     if((carX[index]+carWidth[index]*3)<endLine&&(carX[index]-carWidth[index]*2)>0)
     {
-        cout<<"normal roi"<<endl;
+       // cout<<"normal roi"<<endl;
         tmpRoiX=carX[index]-carWidth[index]*2;
         tmpRoiY=carY[index]-carHeight[index]*2;
         tmpRoiW=carWidth[index]*5;
         tmpRoiH=carHeight[index]*5;
-        cout<<"tmpRoiX"<<tmpRoiX<<endl;
+       // cout<<"tmpRoiX"<<tmpRoiX<<endl;
         //region_of_interest = Rect(x-width*2,y-height*2, width*5, height*5);
     }
     else
@@ -163,7 +173,7 @@ void track(int index)
         if((carX[index]-carWidth[index]*2)<0)
         {
             //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
-            cout<<"left roi"<<endl;
+            //cout<<"left roi"<<endl;
             tmpRoiX=0;
             tmpRoiY=carY[index]-carHeight[index]*2;
             tmpRoiW=carX[index]+carWidth[index]*2;
@@ -173,7 +183,7 @@ void track(int index)
         }
         else if((carX[index]+carWidth[index]*3)>=endLine)
         {
-            cout<<"right roi"<<endl;
+           // cout<<"right roi"<<endl;
           
             tmpRoiX=carX[index]-carWidth[index]*2;
             tmpRoiY=carY[index]-carHeight[index]*2;
@@ -223,13 +233,13 @@ void track(int index)
 //    }
     
     
-    if(carStatus[index]==4)
-    {
-        
-    }
+//    if(carStatus[index]==4)
+//    {
+//
+//    }
+//
     
-    
-    if(abs(carLastX[index]-match.x)<carWidth[index]&&abs(carLastY[index]-match.y)<carHeight[index])
+    if(abs(carLastX[index]-match.x)<carWidth[index]/5&&abs(carLastY[index]-match.y)<carHeight[index]/2)
 
      {
 		carX[index]=match.x;
@@ -247,16 +257,17 @@ void track(int index)
      }
      else
      {
-        // rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 0, 255), 0.5 );
-//         rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(0, 0, 255), 0.5 );
-//         string displayInfor=to_string(index)+"worng";
-//         putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index] , match.y + carHeight[index]),
-//                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+       rectangle( img,Point( carLastX[index],carY[index] ), Point( carLastX[index] + carWidth[index] , carY[index] + carHeight[index] ), CV_RGB(0, 0, 255), 0.5 );
+         rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(0, 0, 255), 0.5 );
+       string displayInfor=to_string(index)+"lost,please retag";
+        putText(img, displayInfor.c_str(), cv::Point(match.x + carWidth[index]*2 , match.y + carHeight[index]),
+                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
 //         carX[index]= carLastX[index];
 //         carY[index]= carLastY[index];
 //         carLastX[index]=match.x;
 //         carLastY[index]=match.y;
-         carStatus[index]=2;
+                framePuse=true;
+                carStatus[index]=2;
      }
     // xCurrent=match.x-xLast;
     // yCurrent=match.y-yLast;
@@ -413,7 +424,7 @@ int main( int argc, char** argv ){
      //      //cvSetMouseCallback( "image", mouseHandler, NULL );
      //        continue;
                cap >> img;
-              resize(img, img, Size(screenWidth, screenHeight));
+            resize(img, img, Size(screenWidth, screenHeight));
              stringstream ss;
              stringstream st;
              stringstream fps;
@@ -435,7 +446,7 @@ int main( int argc, char** argv ){
                      FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
              for(int i=0;i<carTemplates.size();i++)
              {
-                 cout<<"start track "<<i<<" car"<<endl;
+                 //cout<<"start track "<<i<<" car"<<endl;
                  if(carStatus[i]!=2&&carStatus[i]!=3&&!carTemplates[i].empty())
                  {
                     track(i);
@@ -510,21 +521,66 @@ int main( int argc, char** argv ){
 //        }
         else if(k=='a')
         {
+            bool addNewcar=false;
             if(mytemplate.empty())
             {
                  cout<<"please select"<<endl;
             }
             else
             {
-                cout<<"add car:"<<carTemplates.size()<<endl;
-                carTemplates.push_back(mytemplate);
-                carX.push_back(roix);
-                carY.push_back(roiy);
-                carWidth.push_back(roiWidth);
-                carHeight.push_back(roiHeight);
-                carLastX.push_back(roix);
-                carLastY.push_back(roiy);
-                carStatus.push_back(0);//0=tag 1=tracking 2=lost 3= finised
+                
+                
+                if(!carTemplates.empty())
+                {
+
+
+                    for(int i=0;i<carTemplates.size();i++)
+                    {
+
+                        if(carStatus[i]==2)
+                        {
+                            double distance=0;
+                            cout<<"find lost cat  "<<i<<" car"<<endl;
+                            distance=findDistanceBetweenTwoPoint(roix,roiy,carLastX[i],carLastY[i]);
+                            cout<<"distance between center is  "<<i<<"is "<<distance<<" to new point"<<endl;
+                            if(distance<carWidth[i]/2)
+                            {
+                                cout<<"new point assign to lost car  "<<i<<"is "<<distance<<" to new point"<<endl;
+                                carStatus[i]=1;
+                                carTemplates[i]=mytemplate;
+                                carX[i]=roix;
+                                carY[i]=roiy;
+                                carLastX[i]=roix;
+                                carLastY[i]=roiy;
+                                addNewcar=true;
+
+                            }
+                        }
+
+
+                    }
+                }
+
+                
+                
+                
+                
+                
+                
+                if(!addNewcar)
+                {
+                    cout<<"add car:"<<carTemplates.size()<<endl;
+                    carTemplates.push_back(mytemplate);
+                    carX.push_back(roix);
+                    carY.push_back(roiy);
+                    carWidth.push_back(roiWidth);
+                    carHeight.push_back(roiHeight);
+                    carLastX.push_back(roix);
+                    carLastY.push_back(roiy);
+                    carStatus.push_back(0);//0=tag 1=tracking 2=lost 3= finised
+                }
+                
+     
                 
                 
                 
