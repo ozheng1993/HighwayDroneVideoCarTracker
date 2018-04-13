@@ -291,7 +291,7 @@ void track(int index)
     }
     else
     {
-        rectangle( img,Point( carLastX[index]-carWidth[index],carLastY[index]-carHeight[index] ), Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ), CV_RGB(255, 0, 0), 0.5 );
+        rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 3 );
         //rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(255, 0, 0), 0.5 );
         //rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 0.5 );
         string displayInfor=to_string(index);
@@ -349,7 +349,10 @@ void mouseHandler(int event, int x, int y, int flags, void *param)
         
         
     }
-    
+    if (event == CV_EVENT_MOUSEMOVE && !drag)
+    {
+        cout<<"mouse X: "<<x<<"y: "<<y<<endl;
+    }
     if (event == CV_EVENT_MOUSEMOVE && drag)
     {
         /// mouse dragged. ROI being selected
