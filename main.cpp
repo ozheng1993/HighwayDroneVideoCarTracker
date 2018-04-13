@@ -43,12 +43,15 @@ int roiWidth=0;
 int roiHeight=0;
 int screenWidth=1920;
 int screenHeight=1080;
-int startLine=1920;
-int endLine=1700;
+int startLineX=50;
+int endLineX=screenWidth-200;
+int startLineY=50;
+int endLineY=screenHeight-100;
 ofstream outfile;
 string frameNumberString;
 string fpsNumberString;
 string timeNumberString;
+string totalFrameNumberString;
 Mat mytemplate;
 Mat mytemplate2;
 double timeFrame=0.0;
@@ -151,14 +154,14 @@ void track(int index)
     int tmpRoiW=0;
     int tmpRoiH=0;
     // cout<<"carX[index]"<<carX[index]<<endl;
-    if(carX[index]+carWidth[index]>=endLine||carX[index]<=carWidth[index])
+    if(carX[index]+carWidth[index]>=endLineX||carX[index]<=carWidth[index]||carY[index]+carHeight[index]>=endLineY||carY[index]<=carHeight[index])
     {
         cout<<"finished"<<endl;
         carStatus[index]=3;
         
     }
     //finishe dete
-    if((carX[index]+carWidth[index]*3)<endLine&&(carX[index]-carWidth[index]*2)>0)
+    if((carX[index]+carWidth[index]*3)<endLineX&&(carX[index]-carWidth[index]*2)>0&&(carY[index]-carHeight[index]*2)>0&&(carY[index]+carHeight[index]*3)<endLineY)
     {
         // cout<<"normal roi"<<endl;
         tmpRoiX=carX[index]-carWidth[index]*2;
@@ -181,17 +184,48 @@ void track(int index)
             
             // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
         }
-        else if((carX[index]+carWidth[index]*3)>=endLine)
+        else if((carX[index]+carWidth[index]*3)>=endLineX)
         {
             // cout<<"right roi"<<endl;
             
             tmpRoiX=carX[index]-carWidth[index]*2;
             tmpRoiY=carY[index]-carHeight[index]*2;
-            tmpRoiW=endLine-carX[index]+carWidth[index]*2;
+            tmpRoiW=endLineX-carX[index]+carWidth[index]*2;
             tmpRoiH=carHeight[index]*5;
             //region_of_interest = Rect(1,y-height*2, width*7, height*5);
             
         }
+        
+        
+        
+        if((carY[index]-carHeight[index]*3)<0)
+        {
+            //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
+            //cout<<"left roi"<<endl;
+            tmpRoiX=carX[index]-carWidth[index]*2;
+            tmpRoiY=0;
+            tmpRoiW=carWidth[index]*5;
+            tmpRoiH=carHeight[index]*5;
+            
+            // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
+        }
+        else if((carY[index]+carHeight[index]*3)>=endLineY)
+        {
+            cout<<"down roi"<<endl;
+            
+            tmpRoiX=carX[index]-carWidth[index]*2;
+            tmpRoiY=carY[index]-carHeight[index]*2;
+            tmpRoiW=carWidth[index]*5;
+            tmpRoiH=endLineY-carY[index]+carHeight[index]*3;
+            cout<<"x"<<tmpRoiX<<endl;
+             cout<<"y"<<tmpRoiY<<endl;
+             cout<<"w"<<tmpRoiW<<endl;
+             cout<<"h"<<tmpRoiH<<endl;
+            //region_of_interest = Rect(1,y-height*2, width*7, height*5);
+            
+        }
+        
+        
         
     }
     
@@ -257,12 +291,12 @@ void track(int index)
     }
     else
     {
-        rectangle( img,Point( carLastX[index],carY[index] ), Point( carLastX[index] + carWidth[index] , carY[index] + carHeight[index] ), CV_RGB(255, 0, 0), 0.5 );
-        rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(255, 0, 0), 0.5 );
-        rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 0.5 );
-        string displayInfor=to_string(index)+" lost,please retag";
-        putText(img, displayInfor.c_str(), cv::Point(match.x, match.y + carHeight[index]*2),
-                FONT_HERSHEY_SIMPLEX, 1 , cv::Scalar(255,0,0));
+        rectangle( img,Point( carLastX[index]-carWidth[index],carLastY[index]-carHeight[index] ), Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ), CV_RGB(255, 0, 0), 0.5 );
+        //rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(255, 0, 0), 0.5 );
+        //rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 0.5 );
+        string displayInfor=to_string(index);
+        putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
+                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
         //         carX[index]= carLastX[index];
         //         carY[index]= carLastY[index];
         //         carLastX[index]=match.x;
@@ -429,21 +463,26 @@ int main( int argc, char** argv ){
             stringstream ss;
             stringstream st;
             stringstream fps;
-            rectangle(img, cv::Point(10, 2), cv::Point(450,20),
+             stringstream tfn;
+            rectangle(img, cv::Point(0, 2), cv::Point(450,20),
                       cv::Scalar(255,255,255), -1);
             ss << cap.get(CAP_PROP_POS_FRAMES);
             fps << cap.get(CAP_PROP_FPS);
             st << cap.get( CAP_PROP_POS_MSEC);
+            tfn << cap.get( CAP_PROP_FRAME_COUNT);
             frameNumberString = ss.str();
             fpsNumberString = fps.str();
             timeNumberString = st.str();
+            totalFrameNumberString=tfn.str();
             timeFrame=stod(timeNumberString)/1000;
             //  string timeNumberString = st.str();
-            putText(img, frameNumberString.c_str(), cv::Point(15, 15),
+            putText(img, totalFrameNumberString.c_str(), cv::Point(0, 15),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-            putText(img, fpsNumberString.c_str(), cv::Point(70, 15),
+            putText(img, frameNumberString.c_str(), cv::Point(85, 15),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-            putText(img, to_string(timeFrame), cv::Point(190, 15),
+            putText(img, fpsNumberString.c_str(), cv::Point(190, 15),
+                    FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+            putText(img, to_string(timeFrame), cv::Point(290, 15),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
             for(int i=0;i<carTemplates.size();i++)
             {
@@ -451,7 +490,7 @@ int main( int argc, char** argv ){
                 if(carStatus[i]!=2&&carStatus[i]!=3&&!carTemplates[i].empty())
                 {
                     track(i);
-                    outfile<<frameNumberString<<","<<timeNumberString<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
+                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
                     outfile<<endl;
                 }
                 
@@ -563,12 +602,6 @@ int main( int argc, char** argv ){
                         
                     }
                 }
-                
-                
-                
-                
-                
-                
                 
                 if(!addNewcar)
                 {
