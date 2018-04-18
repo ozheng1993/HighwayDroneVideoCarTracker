@@ -1,8 +1,5 @@
 //ou zheng
 //2018/4/4
-
-
-
 #include <iostream>
 #include "opencv2/opencv.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
@@ -41,6 +38,10 @@ int roix=0;
 int roiy=0;
 int roiWidth=0;
 int roiHeight=0;
+int screenOgrinWidth=0;
+int screenOgrinHeight=0;
+int screenWidthScale=0;
+int screenHeightScale=0;
 int screenWidth=1920;
 int screenHeight=1080;
 int startLineX=50;
@@ -57,7 +58,9 @@ Mat mytemplate2;
 double timeFrame=0.0;
 bool framePuse=true;
 bool frameTrack=true;
+vector<Mat> carOrginTemplates;      // array of 10 images
 vector<Mat> carTemplates;      // array of 10 images
+vector<Mat> carLastTemplates;      // array of 10 images
 vector<int> carX;
 vector<int> carY;
 vector<int> carLastX;
@@ -132,6 +135,8 @@ Point minmax( Mat &result )
     double minVal, maxVal;
     Point  minLoc, maxLoc, matchLoc;
     minMaxLoc( result, &minVal, &maxVal, &minLoc, &maxLoc, Mat() );
+//    cout<<"min"<<minVal<<endl;
+//    cout<<"maxVal"<<maxVal<<endl;
     matchLoc = minLoc;
     
     return matchLoc;
@@ -222,27 +227,8 @@ void track(int index)
              cout<<"w"<<tmpRoiW<<endl;
              cout<<"h"<<tmpRoiH<<endl;
             //region_of_interest = Rect(1,y-height*2, width*7, height*5);
-            
         }
-        
-        
-        
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     //     imshow( "mytemplate", mytemplate ); waitKey(0);
     Mat result  =  TplMatch( img, carTemplates[index],index,carX[index],carY[index],carWidth[index],carHeight[index], tmpRoiX,tmpRoiY,tmpRoiW,tmpRoiH);
@@ -273,8 +259,7 @@ void track(int index)
     //    }
     //
     
-    if(abs(carLastX[index]-match.x)<carWidth[index]/2&&abs(carLastY[index]-match.y)<carHeight[index]/2)
-        
+    if(abs(carLastX[index]-match.x)<carWidth[index]/2&&abs(carLastY[index]-match.y)<carHeight[index]/2&&carStatus[index]!=4)
     {
         carX[index]=match.x;
         carY[index]= match.y;
@@ -288,21 +273,72 @@ void track(int index)
                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
         carLastX[index]=match.x;
         carLastY[index]=match.y;
+        Rect tmpROI = cv::Rect( carLastX[index], carLastY[index], carWidth[index], carHeight[index]);
+        Mat tempRoiImg = img( tmpROI );
+        carLastTemplates[index]=tempRoiImg;
+//       imshow("last", carLastTemplates[index]);
+//        imshow("now", carTemplates[index]);
+//        imshow("org",carOrginTemplates[index]);
     }
     else
     {
-        rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 3 );
-        //rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(255, 0, 0), 0.5 );
-        //rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 0.5 );
-        string displayInfor=to_string(index);
+        //rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 3 );
+//       rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(255, 155, 155), 1 );
+//       // rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 1 );
+//
+//        rectangle( img, Point(carLastX[index],carLastY[index]), Point( carLastX[index] + carWidth[index] , carLastY[index]+ carHeight[index] ), CV_RGB(0, 255, 0), 1 );
+//
+        string displayInfor=to_string(index)+"research";
         putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-        //         carX[index]= carLastX[index];
-        //         carY[index]= carLastY[index];
-        //         carLastX[index]=match.x;
-        //         carLastY[index]=match.y;
-        framePuse=true;
-        carStatus[index]=2;
+//        carTemplates[index]=carLastTemplates[index];
+        
+        
+        Mat searchResult  =  TplMatch( img, carLastTemplates[index],index,carX[index],carY[index],carWidth[index],carHeight[index], tmpRoiX,tmpRoiY,tmpRoiW,tmpRoiH);
+        Point searchMatch =  minmax( searchResult );
+        //re position roi
+        searchMatch.x+=(carX[index]-carWidth[index]*2);
+        searchMatch.y+=(carY[index]-carHeight[index]*2);
+       
+        if(abs(carLastX[index]-searchMatch.x)<carWidth[index]/2&&abs(carLastY[index]-searchMatch.y)<carHeight[index]/2)
+        {
+            cout<<"normal"<<endl;
+            carTemplates[index]=carLastTemplates[index];
+        }
+        else
+        {
+           // rectangle( img,  searchMatch, Point( searchMatch.x + carWidth[index] , searchMatch.y + carHeight[index] ), CV_RGB(255, 0, 0), 0.5 );
+            rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 2 );
+            string displayInfor=to_string(index)+" lost";
+            putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
+                    FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+            cout<<"lost"<<endl;
+            framePuse=true;
+            carStatus[index]=2;
+        }
+        
+//        Mat searchResult  =  TplMatch( img, carTemplates[index],index,carX[index],carY[index],carWidth[index],carHeight[index], tmpRoiX,tmpRoiY,tmpRoiW,tmpRoiH);
+//        Point searchmatch =  minmax( result );
+        
+//        Mat tmpRoiImg = img(rect);
+//        cout<<"x..............."<<carLastX[index]<<endl;
+//        cout<<"y..............."<<carLastY[index]<<endl;
+//
+//        roiImg.copyTo(carTemplates[index]);
+//        carLastTemplates[index].copyTo(carTemplates[index]);
+//                 carX[index]= carLastX[index];
+//                 carY[index]= carLastY[index];
+//                 carLastX[index]=match.x;
+//        //         carLastY[index]=match.y;
+    //framePuse=true;
+        
+        
+        
+    //carStatus[index]=4;
+        
+        
+        
+        
     }
     // xCurrent=match.x-xLast;
     // yCurrent=match.y-yLast;
@@ -338,15 +374,6 @@ void mouseHandler(int event, int x, int y, int flags, void *param)
         point1 = Point(x, y);
         drag = 1;
         cout<<"start dray"<<x<<"|"<<y<<endl;
-        
-        
-        
-        
-        
-        
-        
-        
-        
         
     }
     if (event == CV_EVENT_MOUSEMOVE && !drag)
@@ -459,10 +486,23 @@ int main( int argc, char** argv ){
      cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);*/
     
     cap >> img;
+   
+//    screenOgrinWidth=img.cols;
+//    screenOgrinHeight=img.rows;
+//    screenWidthScale=screenOgrinWidth/screenWidth;
+//    screenHeightScale=screenOgrinHeight/screenHeight;
+//    screenWidth=img.cols;
+//    screenHeight=img.rows;
+//    cout << screenWidthScale<<endl;
+//    cout << img.rows<<endl;
+//   // resize(img, img, Size(screenWidth, screenHeight));
+//    //GaussianBlur( img, img, Size(7,7), 3.0 );
+//    namedWindow("image", WINDOW_NORMAL);
+//    resizeWindow("image", img.cols / 2, img.rows / 2);
     
-    //GaussianBlur( img, img, Size(7,7), 3.0 );
+    resize(img, img, Size(screenWidth, screenHeight), 0, 0, INTER_CUBIC);
     imshow( "image", img );
-    resize(img, img, Size(screenWidth, screenHeight));
+   
     while(1)
     {
         //cout<<framePuse<<endl;
@@ -470,10 +510,24 @@ int main( int argc, char** argv ){
         if(!framePuse)
         {
             
+            
+            
+//            for(int i=0;i<carTemplates.size();i++)
+//            {
+//
+//                if(carStatus[i]==2)
+//                {
+//                    carStatus[i]==4;
+//                }
+//            }
+            
+            
             //      //cvSetMouseCallback( "image", mouseHandler, NULL );
             //        continue;
             cap >> img;
-            resize(img, img, Size(screenWidth, screenHeight));
+             resize(img, img, Size(screenWidth, screenHeight), 0, 0, INTER_CUBIC);
+            //resize(img, img, Size(screenWidth, screenHeight));
+            //GaussianBlur( img, img, Size(7,7), 3.0 );
             stringstream ss;
             stringstream st;
             stringstream fps;
@@ -500,8 +554,21 @@ int main( int argc, char** argv ){
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
             for(int i=0;i<carTemplates.size();i++)
             {
+                
+                
+                if(carStatus[i]==4)
+                {
+                    break;
+                }
+                
+                if(carStatus[i]==2)
+                {
+                    carStatus[i]==4;
+                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
+                    outfile<<endl;
+                }
                 //cout<<"start track "<<i<<" car"<<endl;
-                if(carStatus[i]!=2&&carStatus[i]!=3&&!carTemplates[i].empty())
+                if(carStatus[i]!=2&&carStatus[i]!=4&&carStatus[i]!=3&&!carTemplates[i].empty())
                 {
                     track(i);
                     outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
@@ -621,6 +688,8 @@ int main( int argc, char** argv ){
                 {
                     cout<<"add car:"<<carTemplates.size()<<endl;
                     carTemplates.push_back(mytemplate);
+                    carLastTemplates.push_back(mytemplate);
+                    carOrginTemplates.push_back(mytemplate);
                     carX.push_back(roix);
                     carY.push_back(roiy);
                     carWidth.push_back(roiWidth);
@@ -649,13 +718,15 @@ int main( int argc, char** argv ){
                 String windowName="car:"+to_string(index);
                 destroyWindow(windowName);
                 carTemplates.pop_back();
+                carLastTemplates.pop_back();
                 carX.pop_back();
                 carY.pop_back();
                 carWidth.pop_back();
                 carHeight.pop_back();
+                carOrginTemplates.pop_back();
                 carLastX.pop_back();
                 carLastY.pop_back();
-                carStatus.pop_back();//0=tag 1=tracking 2=lost 3= finised 4=search 5 =removed;
+                carStatus.pop_back();//0=tag 1=tracking 2=lost 3= finised 4=lost&cannot find 5 =removed;
             }
             else{
                 cout<<"no more car:"<<carTemplates.size()<<endl;
