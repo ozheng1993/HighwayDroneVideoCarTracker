@@ -45,9 +45,9 @@ int screenHeightScale=0;
 int screenWidth=1920;
 int screenHeight=1080;
 int startLineX=50;
-int endLineX=screenWidth-200;
+int endLineX=screenWidth-300;
 int startLineY=50;
-int endLineY=screenHeight-100;
+int endLineY=screenHeight-200;
 ofstream outfile;
 string frameNumberString;
 string fpsNumberString;
@@ -166,7 +166,7 @@ void track(int index)
         
     }
     //finishe dete
-    if((carX[index]+carWidth[index]*3)<endLineX&&(carX[index]-carWidth[index]*2)>0&&(carY[index]-carHeight[index]*2)>0&&(carY[index]+carHeight[index]*3)<endLineY)
+    if((carX[index]+carWidth[index]*3)<endLineX&&(carX[index]-carWidth[index]*2)>=0&&(carY[index]-carHeight[index]*2)>0&&(carY[index]+carHeight[index]*3)<endLineY)
     {
         // cout<<"normal roi"<<endl;
         tmpRoiX=carX[index]-carWidth[index]*2;
@@ -178,10 +178,10 @@ void track(int index)
     }
     else
     {
-        if((carX[index]-carWidth[index]*2)<0)
+        if((carX[index]-carWidth[index]*2)<=0)
         {
             //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
-            //cout<<"left roi"<<endl;
+           cout<<"left roi"<<endl;
             tmpRoiX=0;
             tmpRoiY=carY[index]-carHeight[index]*2;
             tmpRoiW=carX[index]+carWidth[index]*2;
@@ -289,7 +289,7 @@ void track(int index)
 //        rectangle( img, Point(carLastX[index],carLastY[index]), Point( carLastX[index] + carWidth[index] , carLastY[index]+ carHeight[index] ), CV_RGB(0, 255, 0), 1 );
 //
         string displayInfor=to_string(index)+"research";
-        putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
+        putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index] , carY[index] + carHeight[index] ),
                 FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
 //        carTemplates[index]=carLastTemplates[index];
         
