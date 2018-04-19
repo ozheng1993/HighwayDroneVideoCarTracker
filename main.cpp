@@ -556,19 +556,15 @@ int main( int argc, char** argv ){
             {
                 
                 
-                if(carStatus[i]==4)
-                {
-                    break;
-                }
                 
                 if(carStatus[i]==2)
                 {
-                    carStatus[i]==4;
+                    carStatus[i]=4;
                     outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
                     outfile<<endl;
                 }
                 //cout<<"start track "<<i<<" car"<<endl;
-                if(carStatus[i]!=2&&carStatus[i]!=4&&carStatus[i]!=3&&!carTemplates[i].empty())
+                else if(carStatus[i]!=2&&carStatus[i]!=4&&carStatus[i]!=3&&!carTemplates[i].empty())
                 {
                     track(i);
                     outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
@@ -585,7 +581,7 @@ int main( int argc, char** argv ){
             for(int i=0;i<carTemplates.size();i++)
             {
                 string imname="car:"+to_string(i);
-                if(carStatus[i]!=2&&carStatus[i]!=3)
+                if(carStatus[i]!=2&&carStatus[i]!=3&&carStatus[i]!=4)
                 {
                     rectangle(img, cv::Point(carX[i], carY[i]), cv::Point(carX[i]+carWidth[i],carY[i]+carHeight[i]),
                               cv::Scalar(0,255,0), 1);
