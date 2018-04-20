@@ -276,9 +276,11 @@ void track(int index)
         Rect tmpROI = cv::Rect( carLastX[index], carLastY[index], carWidth[index], carHeight[index]);
         Mat tempRoiImg = img( tmpROI );
         carLastTemplates[index]=tempRoiImg;
-//       imshow("last", carLastTemplates[index]);
-//        imshow("now", carTemplates[index]);
-//        imshow("org",carOrginTemplates[index]);
+       // imshow("last", carLastTemplates[index]);
+      //imshow("now", carTemplates[index]);
+       // imshow("org",carOrginTemplates[index]);
+
+      
     }
     else
     {
@@ -299,11 +301,22 @@ void track(int index)
         //re position roi
         searchMatch.x+=(carX[index]-carWidth[index]*2);
         searchMatch.y+=(carY[index]-carHeight[index]*2);
-       
+              //p framePuse=true;
         if(abs(carLastX[index]-searchMatch.x)<carWidth[index]/2&&abs(carLastY[index]-searchMatch.y)<carHeight[index]/2)
         {
             cout<<"normal"<<endl;
-            carTemplates[index]=carLastTemplates[index];
+            //rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 2 );
+
+            Mat tempExhange;
+            carLastTemplates[index].copyTo(tempExhange);
+       //// carLastX[index]=searchMatch.x;
+       // carLastY[index]=searchMatch.y;
+
+            carTemplates[index]=tempExhange;
+
+ //imshow("after", carTemplates[index]);
+ // framePuse=true;
+
         }
         else
         {
@@ -634,9 +647,9 @@ int main( int argc, char** argv ){
         }
         //        else if(k=='t')
         //        {
-        //            frameTrack!=frameTrack;
+        //            frameTrack!=frameTrack;s
         //        }
-        else if(k=='a')
+        else if(k=='t')
         {
             bool addNewcar=false;
             if(mytemplate.empty())
