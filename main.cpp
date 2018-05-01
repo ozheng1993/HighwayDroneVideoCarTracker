@@ -68,16 +68,33 @@ vector<int> carLastY;
 vector<int> carWidth;
 vector<int> carHeight;
 vector<int> carStatus;//0=tag 1=tracking 2=lost 3= finised
+//remove object
+Mat inpainted;
 
+vector<Mat> objectTemplates;      // array of 10 images
+vector<int> objectX;
+vector<int> objectY;
+vector<int> objectLastX;
+vector<int> objectLastY;
+vector<int> objectWidth;
+vector<int> objectHeight;
+vector<int> objectStatus;//0=tag 1=tracking 2=lost 3= finised
+
+vector<Mat> landmarkTemplates;      // array of 10 images
+vector<int> landmarkX;
+vector<int> landmarkY;
+vector<int> landmarkLastX;
+vector<int> landmarkLastY;
+vector<int> landmarkWidth;
+vector<int> landmarkHeight;
+vector<int> landmarkStatus;//0=tag 1=tracking 2=lost 3= finised
 
 double findDistanceBetweenTwoPoint(int x1,int y1,int x2,int y2)
 {
-    
     double distanceX=abs(x1-x2);
     double distanceY=abs(y1-y2);
     double distance=sqrt(distanceX*distanceX+distanceY*distanceY);
     return distance;
-    
 }
 ///------- template matching -----------------------------------------------------------------------------------------------
 
@@ -153,7 +170,6 @@ void track(int index)
         //         select_flag = false;
         go_fast = true;
     }
-    
     int tmpRoiX=0;
     int tmpRoiY=0;
     int tmpRoiW=0;
@@ -163,7 +179,6 @@ void track(int index)
     {
         cout<<"finished"<<endl;
         carStatus[index]=3;
-        
     }
     //finishe dete
     if((carX[index]+carWidth[index]*3)<endLineX&&(carX[index]-carWidth[index]*2)>=0&&(carY[index]-carHeight[index]*2)>0&&(carY[index]+carHeight[index]*3)<endLineY)
@@ -290,9 +305,9 @@ void track(int index)
 //
 //        rectangle( img, Point(carLastX[index],carLastY[index]), Point( carLastX[index] + carWidth[index] , carLastY[index]+ carHeight[index] ), CV_RGB(0, 255, 0), 1 );
 //
-        string displayInfor=to_string(index)+"research";
-        putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index] , carY[index] + carHeight[index] ),
-                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
+//        string displayInfor=to_string(index)+"research";
+//        putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index] , carY[index] + carHeight[index] ),
+//                FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
 //        carTemplates[index]=carLastTemplates[index];
         
         
@@ -321,7 +336,7 @@ void track(int index)
         else
         {
            // rectangle( img,  searchMatch, Point( searchMatch.x + carWidth[index] , searchMatch.y + carHeight[index] ), CV_RGB(255, 0, 0), 0.5 );
-            rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 2 );
+            rectangle( img,Point( carLastX[index]-carWidth[index],carLastY[index]-carHeight[index] ), Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ), CV_RGB(255, 0, 0), 0.5 );
             string displayInfor=to_string(index)+" lost";
             putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
@@ -375,6 +390,95 @@ void track(int index)
     
     // imshow( "roiImg", roiImg ); //waitKey(0);
 }
+
+
+
+
+
+
+
+
+
+
+//
+/////------- template matching -----------------------------------------------------------------------------------------------
+//
+//Mat objectTplMatch( Mat &img, Mat &mytemplate )
+//{
+//    Mat result;
+//
+//    matchTemplate( img, mytemplate, result, CV_TM_SQDIFF_NORMED );
+//    normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
+//
+//    return result;
+//}
+//
+
+
+
+
+void objectTrack(int index)
+{
+    if (select_flag)
+    {
+        //roiImg.copyTo(mytemplate);
+        //         select_flag = false;
+        go_fast = true;
+    }
+    int tmpRoiX=objectX[index]-objectWidth[index];
+    int tmpRoiY=objectY[index]-objectHeight[index];
+    int tmpRoiW=objectWidth[index]*3;
+    int tmpRoiH=objectHeight[index]*3;
+     //imshow( "mytemplate", objectTemplates[index] ); waitKey(0);
+    Mat result  =  TplMatch( img,objectTemplates[index],index,objectX[index],objectY[index],objectWidth[index],objectHeight[index], tmpRoiX,tmpRoiY,tmpRoiW,tmpRoiH);
+    //Mat result  =  objectTplMatch( img, objectTemplates[index]);
+    Point match =  minmax( result );
+    
+    
+    
+    match.x+=(objectX[index]-objectWidth[index]);
+    match.y+=(objectY[index]-objectHeight[index]);
+    
+    
+    if(objectStatus[index]==0)
+    {
+       objectStatus[index]=1;
+        objectLastX[index]=match.x;
+        objectLastY[index]=match.y;
+    }
+    rectangle( img, match, Point( match.x + objectWidth[index] , match.y + objectHeight[index] ), CV_RGB(255, 255, 255), 0.5 );
+     //rectangle( img, Point( tmpRoiX , tmpRoiY  ), Point( tmpRoiX + tmpRoiW , tmpRoiY + tmpRoiH ), CV_RGB(0, 255, 255), 0.5 );
+    //std::cout << "match: " << match << endl;
+    objectLastX[index]=objectX[index];
+    objectLastY[index]= objectY[index];
+    objectX[index]=match.x;
+    objectY[index]=match.y;
+    
+    Mat inpaintMask = Mat::zeros(img.size(), CV_8U);
+    rectangle( inpaintMask, match, Point( match.x + objectWidth[index] , match.y + objectHeight[index] ), CV_RGB(255, 255, 255), -1 );
+     //rectangle( inpaintMask,  Point( point1.x, point1.y), Point( x,y ), CV_RGB(255, 255, 255),-1 );
+    
+    inpaint(img, inpaintMask, img, 1, INPAINT_TELEA);
+   // imshow("inpainted image", inpainted);
+    
+//    /// latest match is the new template
+//    Rect ROI = cv::Rect( match.x, match.y, mytemplate.cols, mytemplate.rows );
+//    roiImg = img( ROI );
+//    roiImg.copyTo(mytemplate);
+//    imshow( "roiImg", roiImg ); //waitKey(0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ///------- MouseCallback function ------------------------------------------------------------------------------------------
@@ -489,7 +593,7 @@ int main( int argc, char** argv ){
     string fileName="./file/"+video+"_"+str+".csv";
     
     outfile.open(fileName);
-    outfile<<"frameNUM"<<","<<"time(s)"<<","<< "id"<<","<<"width"<<","<<"height"<<","<<"x"<<","<<"y"<<","<<"status"<<",";
+    outfile<<"frameNUM"<<","<<"time(s)"<<","<< "id"<<","<<"width"<<","<<"height"<<","<<"x"<<","<<"y"<<","<<"status"<<","<<"type"<<",";
     outfile<<endl;
     if ( !cap.isOpened() )
     {   cout << "Unable to open video file" << endl;    return -1;    }
@@ -565,27 +669,62 @@ int main( int argc, char** argv ){
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
             putText(img, to_string(timeFrame), cv::Point(290, 15),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
-            for(int i=0;i<carTemplates.size();i++)
+            
+            
+            
+            
+            for(int i=0;i<objectTemplates.size();i++)
             {
                 
+                //                if(carStatus[i]==2)
+                //                {
+                //                    carStatus[i]=4;
+                //                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
+                //                    outfile<<endl;
+                //                }
+                //cout<<"start track "<<i<<" car"<<endl;
+                if(objectStatus[i]!=2&&objectStatus[i]!=4&&objectStatus[i]!=3&&!objectTemplates[i].empty())
+                {
+                    // cout<<"start check object"<<endl;
+                    objectTrack(i);
+                    
+                    
+                    
+                    
+                    
+                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<objectWidth[i]<<","<<objectHeight[i]<<","<<objectLastX[i]<<","<<objectLastY[i]<<","<<objectStatus[i]<<","<<"object"<<",";;
+                    outfile<<endl;
+                }
                 
+            }
+            
+            
+            
+            imshow( "iaaftere", img );
+            
+            for(int i=0;i<carTemplates.size();i++)
+            {
                 
                 if(carStatus[i]==2)
                 {
                     carStatus[i]=4;
-                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
+                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<","<<"car"<<",";
                     outfile<<endl;
                 }
                 //cout<<"start track "<<i<<" car"<<endl;
                 else if(carStatus[i]!=2&&carStatus[i]!=4&&carStatus[i]!=3&&!carTemplates[i].empty())
                 {
                     track(i);
-                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<",";
+                    outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<","<<"car"<<",";
                     outfile<<endl;
                 }
-                
-                
+
             }
+            
+            ////object tracking
+
+            
+            
             
         }
         else{
@@ -606,6 +745,30 @@ int main( int argc, char** argv ){
                 //                 rectangle(img, cv::Point(carX[i], carY[i]), cv::Point(carX[i]+carWidth[i],carY[i]+carHeight[i]),
                 //                           cv::Scalar(0,255,0), 1);
             }
+            
+            
+            
+            
+            
+            for(int i=0;i<objectTemplates.size();i++)
+            {
+                string imname="object:"+to_string(i);
+                if(objectStatus[i]!=2&&objectStatus[i]!=3&&objectStatus[i]!=4)
+                {
+                    rectangle(img, cv::Point(objectX[i], objectY[i]), cv::Point(objectX[i]+objectWidth[i],objectY[i]+objectHeight[i]),
+                              cv::Scalar(125,125,125), 1);
+                }
+                //cout<<"car:"<<i<<"x:"<<carX[i]<<"y:"<<carY[i]<<"width"<<carWidth[i]<<"status"<<carStatus[i]<<endl;
+                
+                //                 imshow(imname, carTemplates[i]);
+                //                 moveWindow(imname, 20,50*i);
+                //                 rectangle(img, cv::Point(carX[i], carY[i]), cv::Point(carX[i]+carWidth[i],carY[i]+carHeight[i]),
+                //                           cv::Scalar(0,255,0), 1);
+            }
+            
+            
+            
+            
             
         }
         // else
@@ -716,6 +879,61 @@ int main( int argc, char** argv ){
             }
             
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        else if(k=='a')
+        {
+           
+     
+                    cout<<"add object:"<<objectTemplates.size()<<endl;
+                    objectTemplates.push_back(mytemplate);
+                    //carLastTemplates.push_back(mytemplate);
+                    //carOrginTemplates.push_back(mytemplate);
+                    objectX.push_back(roix);
+                    objectY.push_back(roiy);
+                    objectWidth.push_back(roiWidth);
+                    objectHeight.push_back(roiHeight);
+                    objectLastX.push_back(roix);
+                    objectLastY.push_back(roiy);
+                    objectStatus.push_back(0);//0=tag 1=tracking 2=lost 3= finised
+            
+                
+                
+                
+                
+                
+                
+            
+            
+        }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         else if(k=='r')
         {
             if(carTemplates.size()>0)
