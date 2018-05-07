@@ -340,8 +340,8 @@ void track(int index)
         }
         else
         {
-           // rectangle( img,  searchMatch, Point( searchMatch.x + carWidth[index] , searchMatch.y + carHeight[index] ), CV_RGB(255, 0, 0), 0.5 );
-            rectangle( img,Point( carLastX[index]-tmpRoiScaleW/2,carLastY[index]-tmpRoiScaleH/2 ), Point( carLastX[index] + carWidth[index]+tmpRoiScaleW , carY[index] + carHeight[index]+tmpRoiScaleH ), CV_RGB(255, 0, 0), 0.5 );
+           rectangle( img,  searchMatch, Point( searchMatch.x + carWidth[index]+tmpRoiScaleW , searchMatch.y + carHeight[index]+tmpRoiScaleH ), CV_RGB(255, 0, 0), 0.5 );
+            //rectangle( img,Point( carLastX[index]-tmpRoiScaleW/2,carLastY[index]-tmpRoiScaleH/2 ), Point( carLastX[index] + carWidth[index]+tmpRoiScaleW , carY[index] + carHeight[index]+tmpRoiScaleH ), CV_RGB(255, 0, 0), 0.5 );
             string displayInfor=to_string(index)+" lost";
             putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
