@@ -175,20 +175,20 @@ void track(int index)
     int tmpRoiW=0;
     int tmpRoiH=0;
     int tmpRoiScaleW=50;
-    int tmpRoiScaleH=50;
+    int tmpRoiScaleH=20;
     
     
     // cout<<"carX[index]"<<carX[index]<<endl;
     if(carX[index]+carWidth[index]+tmpRoiScaleW>=endLineX||carX[index]-tmpRoiScaleW/2<=carWidth[index]||carY[index]+carHeight[index]+tmpRoiScaleH>=endLineY||carY[index]-tmpRoiScaleH/2<=carHeight[index])
     {
-        cout<<"finished"<<endl;
+        //cout<<"finished"<<endl;
         carStatus[index]=3;
         return ;
     }
     //finishe dete
     else if((carX[index]+carWidth[index]+tmpRoiScaleW)<endLineX&&(carX[index]-tmpRoiScaleW/2)>=0&&(carY[index]-tmpRoiScaleH/2)>0&&(carY[index]+carHeight[index]+tmpRoiScaleH)<endLineY)
     {
-         cout<<"normal roi"<<endl;
+        // cout<<"normal roi"<<endl;
         tmpRoiX=carX[index]-tmpRoiScaleW/2;
         tmpRoiY=carY[index]-tmpRoiScaleH/2;
         tmpRoiW=carWidth[index]+tmpRoiScaleW;
@@ -281,8 +281,10 @@ void track(int index)
     
     if(abs(carLastX[index]-match.x)<carWidth[index]/2&&abs(carLastY[index]-match.y)<carHeight[index]/2&&carStatus[index]!=4)
     {
+        
+        
         carX[index]=match.x;
-        carY[index]= match.y;
+        carY[index]=match.y;
         //    mytemplate2= img(Rect(match.x, match.y,  mytemplate.cols , mytemplate.rows ));
         //       //roiImg.copyTo(mytemplate);
         // imshow("mytemplate2", mytemplate2);
@@ -305,10 +307,10 @@ void track(int index)
     else
     {
         //rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 3 );
-//       rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(255, 155, 155), 1 );
-//       // rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 1 );
+        
+            ///rectangle( img, match, Point( match.x + carWidth[index] , match.y + carHeight[index] ), CV_RGB(0, 255, 0), 1 );
 //
-//        rectangle( img, Point(carLastX[index],carLastY[index]), Point( carLastX[index] + carWidth[index] , carLastY[index]+ carHeight[index] ), CV_RGB(0, 255, 0), 1 );
+          // rectangle( img, Point(carLastX[index],carLastY[index]), Point( carLastX[index] + carWidth[index] , carLastY[index]+ carHeight[index] ), CV_RGB(0, 155, 0), 1 );
 //
 //        string displayInfor=to_string(index)+"research";
 //        putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index] , carY[index] + carHeight[index] ),
@@ -322,9 +324,9 @@ void track(int index)
         searchMatch.x+=(carX[index]-tmpRoiScaleW/2);
         searchMatch.y+=(carY[index]-tmpRoiScaleH/2);
               //p framePuse=true;
-        if(abs(carLastX[index]-searchMatch.x)<carWidth[index]/2&&abs(carLastY[index]-searchMatch.y)<carHeight[index]/2)
+        if(abs(carLastX[index]-searchMatch.x)<carWidth[index]/2 &&abs(carLastY[index]-searchMatch.y)<carHeight[index]/2)
         {
-            cout<<"normal"<<endl;
+            //cout<<"normal"<<endl;
             //rectangle( img,Point( carLastX[index]-carWidth[index]/2,carLastY[index]-carHeight[index]/2 ), Point( carLastX[index] + carWidth[index]*1.5 , carY[index] + carHeight[index]*1.5 ), CV_RGB(255, 0, 0), 2 );
 
             Mat tempExhange;
@@ -341,7 +343,7 @@ void track(int index)
         else
         {
            // rectangle( img,  searchMatch, Point( searchMatch.x + carWidth[index] , searchMatch.y + carHeight[index] ), CV_RGB(255, 0, 0), 0.5 );
-            rectangle( img,Point( carLastX[index]-tmpRoiScaleW/2,carLastY[index]-tmpRoiScaleH/2 ), Point( carLastX[index] + carWidth[index]+tmpRoiScaleW , carY[index] + carHeight[index]+tmpRoiScaleH ), CV_RGB(255, 0, 0), 0.5 );
+           rectangle( img,  Point( tmpRoiX,tmpRoiY ), Point( tmpRoiX+tmpRoiW,tmpRoiY+tmpRoiH ), CV_RGB(255, 155, 155), 1 );
             string displayInfor=to_string(index)+" lost";
             putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
@@ -500,7 +502,7 @@ void mouseHandler(int event, int x, int y, int flags, void *param)
     }
     if (event == CV_EVENT_MOUSEMOVE && !drag)
     {
-        cout<<"mouse X: "<<x<<"y: "<<y<<endl;
+       // cout<<"mouse X: "<<x<<"y: "<<y<<endl;
     }
     if (event == CV_EVENT_MOUSEMOVE && drag)
     {
@@ -840,8 +842,8 @@ int main( int argc, char** argv ){
                             double distance=0;
                             cout<<"find lost cat  "<<i<<" car"<<endl;
                             distance=findDistanceBetweenTwoPoint(roix,roiy,carLastX[i],carLastY[i]);
-                            cout<<"distance between center is  "<<i<<"is "<<distance<<" to new point"<<endl;
-                            if(distance<carWidth[i]/2)
+                            cout<<"distance between center for  "<<i<<"is "<<distance<<" to new point"<<endl;
+                            if(distance<carWidth[i])
                             {
                                 cout<<"new point assign to lost car  "<<i<<"is "<<distance<<" to new point"<<endl;
                                 carStatus[i]=1;
