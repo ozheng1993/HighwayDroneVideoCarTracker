@@ -44,10 +44,10 @@ int screenWidthScale=0;
 int screenHeightScale=0;
 int screenWidth=1920;
 int screenHeight=1080;
-int startLineX=50;
-int endLineX=screenWidth-300;
-int startLineY=50;
-int endLineY=screenHeight-200;
+int startLineX=0;
+int endLineX=screenWidth;
+int startLineY=0;
+int endLineY=screenHeight;
 ofstream outfile;
 string frameNumberString;
 string fpsNumberString;
@@ -140,7 +140,7 @@ Mat TplMatch( Mat &img, Mat &mytemplate,int index,int x,int y,int width,int heig
     
     matchTemplate( img(region_of_interest), mytemplate, result, CV_TM_SQDIFF_NORMED );
     normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
-    // imshow(windowname, Roi);
+   imshow(windowname, Roi);
     return result;
 }
 
@@ -174,84 +174,89 @@ void track(int index)
     int tmpRoiY=0;
     int tmpRoiW=0;
     int tmpRoiH=0;
+    int tmpRoiScaleW=30;
+    int tmpRoiScaleH=30;
+    
+    
     // cout<<"carX[index]"<<carX[index]<<endl;
-    if(carX[index]+carWidth[index]>=endLineX||carX[index]<=carWidth[index]||carY[index]+carHeight[index]>=endLineY||carY[index]<=carHeight[index])
+    if(carX[index]+carWidth[index]+tmpRoiScaleW>=endLineX||carX[index]-tmpRoiScaleW/2<=carWidth[index]||carY[index]+carHeight[index]+tmpRoiScaleH>=endLineY||carY[index]-tmpRoiScaleH/2<=carHeight[index])
     {
         cout<<"finished"<<endl;
         carStatus[index]=3;
+        return ;
     }
     //finishe dete
-    if((carX[index]+carWidth[index]*3)<endLineX&&(carX[index]-carWidth[index]*2)>=0&&(carY[index]-carHeight[index]*2)>0&&(carY[index]+carHeight[index]*3)<endLineY)
+    else if((carX[index]+carWidth[index]+tmpRoiScaleW)<endLineX&&(carX[index]-tmpRoiScaleW/2)>=0&&(carY[index]-carHeight[index]*2)>0&&(carY[index]+carHeight[index]*3)<endLineY)
     {
-        // cout<<"normal roi"<<endl;
-        tmpRoiX=carX[index]-carWidth[index]*2;
-        tmpRoiY=carY[index]-carHeight[index]*2;
-        tmpRoiW=carWidth[index]*5;
-        tmpRoiH=carHeight[index]*5;
+         cout<<"normal roi"<<endl;
+        tmpRoiX=carX[index]-tmpRoiScaleW/2;
+        tmpRoiY=carY[index]-tmpRoiScaleH/2;
+        tmpRoiW=carWidth[index]+tmpRoiScaleW;
+        tmpRoiH=carHeight[index]+tmpRoiScaleH;
         // cout<<"tmpRoiX"<<tmpRoiX<<endl;
         //region_of_interest = Rect(x-width*2,y-height*2, width*5, height*5);
     }
-    else
-    {
-        if((carX[index]-carWidth[index]*2)<=0)
-        {
-            //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
-           cout<<"left roi"<<endl;
-            tmpRoiX=0;
-            tmpRoiY=carY[index]-carHeight[index]*2;
-            tmpRoiW=carX[index]+carWidth[index]*2;
-            tmpRoiH=carHeight[index]*5;
-            
-            // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
-        }
-        else if((carX[index]+carWidth[index]*3)>=endLineX)
-        {
-            // cout<<"right roi"<<endl;
-            
-            tmpRoiX=carX[index]-carWidth[index]*2;
-            tmpRoiY=carY[index]-carHeight[index]*2;
-            tmpRoiW=endLineX-carX[index]+carWidth[index]*2;
-            tmpRoiH=carHeight[index]*5;
-            //region_of_interest = Rect(1,y-height*2, width*7, height*5);
-            
-        }
-        
-        
-        
-        if((carY[index]-carHeight[index]*3)<0)
-        {
-            //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
-            //cout<<"left roi"<<endl;
-            tmpRoiX=carX[index]-carWidth[index]*2;
-            tmpRoiY=0;
-            tmpRoiW=carWidth[index]*5;
-            tmpRoiH=carHeight[index]*5;
-            
-            // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
-        }
-        else if((carY[index]+carHeight[index]*3)>=endLineY)
-        {
-            cout<<"down roi"<<endl;
-            
-            tmpRoiX=carX[index]-carWidth[index]*2;
-            tmpRoiY=carY[index]-carHeight[index]*2;
-            tmpRoiW=carWidth[index]*5;
-            tmpRoiH=endLineY-carY[index]+carHeight[index]*3;
-            cout<<"x"<<tmpRoiX<<endl;
-             cout<<"y"<<tmpRoiY<<endl;
-             cout<<"w"<<tmpRoiW<<endl;
-             cout<<"h"<<tmpRoiH<<endl;
-            //region_of_interest = Rect(1,y-height*2, width*7, height*5);
-        }
-    }
-    
+//    else
+//    {
+//        if((carX[index]-carWidth[index]*2)<=0)
+//        {
+//            //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
+//           cout<<"left roi"<<endl;
+//            tmpRoiX=0;
+//            tmpRoiY=carY[index]-carHeight[index]*2;
+//            tmpRoiW=carX[index]+carWidth[index]*2;
+//            tmpRoiH=carHeight[index]*5;
+//
+//            // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
+//        }
+//        else if((carX[index]+carWidth[index]*3)>=endLineX)
+//        {
+//            // cout<<"right roi"<<endl;
+//
+//            tmpRoiX=carX[index]-carWidth[index]*2;
+//            tmpRoiY=carY[index]-carHeight[index]*2;
+//            tmpRoiW=endLineX-carX[index]+carWidth[index]*2;
+//            tmpRoiH=carHeight[index]*5;
+//            //region_of_interest = Rect(1,y-height*2, width*7, height*5);
+//
+//        }
+//
+//
+//
+//        if((carY[index]-carHeight[index]*3)<0)
+//        {
+//            //cout<<"carX[carX[index]-carWidth[index]*2]"<<carX[index]-carWidth[index]*2<<endl;
+//            //cout<<"left roi"<<endl;
+//            tmpRoiX=carX[index]-carWidth[index]*2;
+//            tmpRoiY=0;
+//            tmpRoiW=carWidth[index]*5;
+//            tmpRoiH=carHeight[index]*5;
+//
+//            // region_of_interest = Rect(x-width*2,y-height*2, screenWidth-(x-width*2), height*5);
+//        }
+//        else if((carY[index]+carHeight[index]*3)>=endLineY)
+//        {
+//            cout<<"down roi"<<endl;
+//
+//            tmpRoiX=carX[index]-carWidth[index]*2;
+//            tmpRoiY=carY[index]-carHeight[index]*2;
+//            tmpRoiW=carWidth[index]*5;
+//            tmpRoiH=endLineY-carY[index]+carHeight[index]*3;
+//            cout<<"x"<<tmpRoiX<<endl;
+//             cout<<"y"<<tmpRoiY<<endl;
+//             cout<<"w"<<tmpRoiW<<endl;
+//             cout<<"h"<<tmpRoiH<<endl;
+//            //region_of_interest = Rect(1,y-height*2, width*7, height*5);
+//        }
+//    }
+//
     //     imshow( "mytemplate", mytemplate ); waitKey(0);
     Mat result  =  TplMatch( img, carTemplates[index],index,carX[index],carY[index],carWidth[index],carHeight[index], tmpRoiX,tmpRoiY,tmpRoiW,tmpRoiH);
     Point match =  minmax( result );
     
     //re position roi
-    match.x+=(carX[index]-carWidth[index]*2);
-    match.y+=(carY[index]-carHeight[index]*2);
+    match.x+=(carX[index]-tmpRoiScaleW/2);
+    match.y+=(carY[index]-tmpRoiScaleH/2);
     //cout<<sqrt(abs(xLast-match.x)^2+abs(yLast-match.y)^2)<<endl;
     if(carStatus[index]==0)
     {
@@ -700,7 +705,7 @@ int main( int argc, char** argv ){
             
             
             
-            imshow( "iaaftere", img );
+            //imshow( "iaaftere", img );
             
             for(int i=0;i<carTemplates.size();i++)
             {
