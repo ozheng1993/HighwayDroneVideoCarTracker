@@ -140,7 +140,7 @@ Mat TplMatch( Mat &img, Mat &mytemplate,int index,int x,int y,int width,int heig
     
     matchTemplate( img(region_of_interest), mytemplate, result, CV_TM_SQDIFF_NORMED );
     normalize( result, result, 0, 1, NORM_MINMAX, -1, Mat() );
-   imshow(windowname, Roi);
+   //imshow(windowname, Roi);
     return result;
 }
 
@@ -174,8 +174,8 @@ void track(int index)
     int tmpRoiY=0;
     int tmpRoiW=0;
     int tmpRoiH=0;
-    int tmpRoiScaleW=30;
-    int tmpRoiScaleH=30;
+    int tmpRoiScaleW=50;
+    int tmpRoiScaleH=50;
     
     
     // cout<<"carX[index]"<<carX[index]<<endl;
@@ -186,7 +186,7 @@ void track(int index)
         return ;
     }
     //finishe dete
-    else if((carX[index]+carWidth[index]+tmpRoiScaleW)<endLineX&&(carX[index]-tmpRoiScaleW/2)>=0&&(carY[index]-carHeight[index]*2)>0&&(carY[index]+carHeight[index]*3)<endLineY)
+    else if((carX[index]+carWidth[index]+tmpRoiScaleW)<endLineX&&(carX[index]-tmpRoiScaleW/2)>=0&&(carY[index]-tmpRoiScaleH/2)>0&&(carY[index]+carHeight[index]+tmpRoiScaleH)<endLineY)
     {
          cout<<"normal roi"<<endl;
         tmpRoiX=carX[index]-tmpRoiScaleW/2;
@@ -319,8 +319,8 @@ void track(int index)
         Mat searchResult  =  TplMatch( img, carLastTemplates[index],index,carX[index],carY[index],carWidth[index],carHeight[index], tmpRoiX,tmpRoiY,tmpRoiW,tmpRoiH);
         Point searchMatch =  minmax( searchResult );
         //re position roi
-        searchMatch.x+=(carX[index]-carWidth[index]*2);
-        searchMatch.y+=(carY[index]-carHeight[index]*2);
+        searchMatch.x+=(carX[index]-tmpRoiScaleW/2);
+        searchMatch.y+=(carY[index]-tmpRoiScaleH/2);
               //p framePuse=true;
         if(abs(carLastX[index]-searchMatch.x)<carWidth[index]/2&&abs(carLastY[index]-searchMatch.y)<carHeight[index]/2)
         {
@@ -341,7 +341,7 @@ void track(int index)
         else
         {
            // rectangle( img,  searchMatch, Point( searchMatch.x + carWidth[index] , searchMatch.y + carHeight[index] ), CV_RGB(255, 0, 0), 0.5 );
-            rectangle( img,Point( carLastX[index]-carWidth[index],carLastY[index]-carHeight[index] ), Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ), CV_RGB(255, 0, 0), 0.5 );
+            rectangle( img,Point( carLastX[index]-tmpRoiScaleW/2,carLastY[index]-tmpRoiScaleH/2 ), Point( carLastX[index] + carWidth[index]+tmpRoiScaleW , carY[index] + carHeight[index]+tmpRoiScaleH ), CV_RGB(255, 0, 0), 0.5 );
             string displayInfor=to_string(index)+" lost";
             putText(img, displayInfor.c_str(), cv::Point( carLastX[index] + carWidth[index]*3 , carY[index] + carHeight[index]*3 ),
                     FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,0,0));
