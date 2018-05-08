@@ -502,7 +502,7 @@ void mouseHandler(int event, int x, int y, int flags, void *param)
     }
     if (event == CV_EVENT_MOUSEMOVE && !drag)
     {
-        // cout<<"mouse X: "<<x<<"y: "<<y<<endl;
+         cout<<"mouse X: "<<x<<" y: "<<y<<endl;
     }
     if (event == CV_EVENT_MOUSEMOVE && drag)
     {
