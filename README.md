@@ -4,20 +4,20 @@ This repository contains OpenCV code and documents.
 ` git clone git@github.com:ozheng1993/OpenCVHighwayCarTracker.git `
 
 ## How to open in Ubuntu ##
-1. Ctrl+Alt+T 
-2. nav to program root folder
+1. Press ` Ctrl+Alt+T ` to open the Terminal. 
+2. Nav to program root folder.
     1. run `ls ` to check where you at.
     2. run ` cd  folder name` to entry a folder.
     3. for ou's friend run `cd Desktop/openCVTracker`
-3. compile and run ` g++ -std=c++11 main.cpp `pkg-config --libs --cflags opencv` -o main `
-4. run `./ main` + video file name
+3. Compile and run ` g++ -std=c++11 main.cpp `pkg-config --libs --cflags opencv` -o main `
+4. Run `./ main` + video file name
      1. add number after to skip frame.
 ## How to open in Mac ##
 ## For car ##
-press `t`  to add car to the tracker
-press `r`  to remove the last car to the tracker
-press `p`  to puse/resume
+Press `t`  to add car to the tracker
+Press `r`  to remove the last car to the tracker
+Press `p`  to puse/resume
 ## For Object ##
-press `a`  to add to object list
+Press `a`  to add to object list. ps:this action will remove object from the frame too
 ## Where is you data ##
-go to the root folder and open the folder named as `file`
+Go to the root folder and open the folder named as `file`
