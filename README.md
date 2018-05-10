@@ -10,7 +10,7 @@ This repository contains OpenCV code and documents.
     2. run ` cd  folder name` to entry folder.
     3. for ou's friend run `cd Desktop/openCVTracker`.
 3. Compile and run `` g++ -std=c++11 main.cpp `pkg-config --libs --cflags opencv` -o main ``.
-4. Run `./ main videofilename\.
+4. Run `./ main videofilename`.
      1. add number after to skip frame.
 ## How to open in Mac ##
 ## For car ##
