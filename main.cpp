@@ -719,7 +719,7 @@ int main( int argc, char** argv ){
                     outfile<<endl;
                 }
                 //cout<<"start track "<<i<<" car"<<endl;
-                else if(carStatus[i]!=2&&carStatus[i]!=4&&carStatus[i]!=3&&!carTemplates[i].empty())
+                else if(carStatus[i]!=2&&carStatus[i]!=4&&carStatus[i]!=5&&carStatus[i]!=3&&!carTemplates[i].empty())
                 {
                     track(i);
                     outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<","<<"car"<<",";
@@ -740,7 +740,7 @@ int main( int argc, char** argv ){
             for(int i=0;i<carTemplates.size();i++)
             {
                 string imname="car:"+to_string(i);
-                if(carStatus[i]!=2&&carStatus[i]!=3&&carStatus[i]!=4)
+                if(carStatus[i]!=2&&carStatus[i]!=3&&carStatus[i]!=4&&carStatus[i]!=5)
                 {
                     rectangle(img, cv::Point(carX[i], carY[i]), cv::Point(carX[i]+carWidth[i],carY[i]+carHeight[i]),
                               cv::Scalar(0,255,0), 1);
@@ -829,11 +829,8 @@ int main( int argc, char** argv ){
             else
             {
                 
-                
                 if(!carTemplates.empty())
                 {
-                    
-                    
                     for(int i=0;i<carTemplates.size();i++)
                     {
                         
@@ -846,6 +843,27 @@ int main( int argc, char** argv ){
                             if(distance<carWidth[i])
                             {
                                 cout<<"new point assign to lost car  "<<i<<"is "<<distance<<" to new point"<<endl;
+                                carStatus[i]=1;
+                                carTemplates[i]=mytemplate;
+                                carX[i]=roix;
+                                carY[i]=roiy;
+                                carLastX[i]=roix;
+                                carLastY[i]=roiy;
+                                carWidth[i]=roiWidth;
+                                carHeight[i]=roiHeight;
+                                addNewcar=true;
+                                
+                            }
+                        }
+                        else if(carStatus[i]==1)
+                        {
+                            double distance=0;
+                            
+                            distance=findDistanceBetweenTwoPoint(roix,roiy,carLastX[i],carLastY[i]);
+                            
+                            if(distance<carWidth[i])
+                            {
+                                cout<<"re track car "<<endl;
                                 carStatus[i]=1;
                                 carTemplates[i]=mytemplate;
                                 carX[i]=roix;
@@ -897,8 +915,6 @@ int main( int argc, char** argv ){
         
         else if(k=='a')
         {
-            
-            
             cout<<"add object:"<<objectTemplates.size()<<endl;
             objectTemplates.push_back(mytemplate);
             //carLastTemplates.push_back(mytemplate);
@@ -909,20 +925,42 @@ int main( int argc, char** argv ){
             objectHeight.push_back(roiHeight);
             objectLastX.push_back(roix);
             objectLastY.push_back(roiy);
-            objectStatus.push_back(0);//0=tag 1=tracking 2=lost 3= finised
-            
-            
-            
-            
-            
-            
-            
-            
-            
+            objectStatus.push_back(0);//0=tag 1=tracking 2=lost 3= finised 4=lost and cannot find 5=removed
         }
         
         
-        
+        else if(k=='d')
+        {
+            for(int i=0;i<carTemplates.size();i++)
+            {
+                
+//                if(carStatus[i]==2)
+//                {
+                    double distance=0;
+                    cout<<"find lost cat  "<<i<<" car"<<endl;
+                    distance=findDistanceBetweenTwoPoint(roix,roiy,carLastX[i],carLastY[i]);
+                    //cout<<"distance between center for  "<<i<<"is "<<distance<<" to new point"<<endl;
+                    if(distance<carWidth[i])
+                    {
+                        cout<<"remove  "<<i<<endl;
+                        carStatus[i]=5;
+                        outfile<<frameNumberString<<","<<timeFrame<<","<< i<<","<<carWidth[i]<<","<<carHeight[i]<<","<<carX[i]<<","<<carY[i]<<","<<carStatus[i]<<","<<"car"<<",";
+                        outfile<<endl;
+//                        carTemplates[i]=mytemplate;
+//                        carX[i]=roix;
+//                        carY[i]=roiy;
+//                        carLastX[i]=roix;
+//                        carLastY[i]=roiy;
+//                        carWidth[i]=roiWidth;
+//                        carHeight[i]=roiHeight;
+                        //addNewcar=true;
+                        
+//                    }
+                }
+                
+                
+            }
+        }
         
         
         
