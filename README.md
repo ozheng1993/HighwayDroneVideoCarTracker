@@ -7,7 +7,7 @@ This repository contains OpenCV code and documents.
 1. Press ` Ctrl+Alt+T ` to open the Terminal. 
 2. Nav to program root folder.
     1. run `ls ` to check where you at.
-    2. run ` cd  folder name` to entry a folder.
+    2. run ` cd  folder name` to entry folder.
     3. for ou's friend run `cd Desktop/openCVTracker`.
 3. Compile and run `` g++ -std=c++11 main.cpp `pkg-config --libs --cflags opencv` -o main ``.
 4. Run `./ main videofilename\.
