@@ -45,7 +45,7 @@ int screenHeightScale=0;
 int screenWidth=1920;
 int screenHeight=1080;
 int startLineX=0;
-int endLineX=screenWidth;
+int endLineX=screenWidth-100;
 int startLineY=0;
 int endLineY=screenHeight;
 ofstream outfile;
@@ -579,7 +579,10 @@ int main( int argc, char** argv ){
     {
         Mat framePre;
         for( int x = 0; x < stoi(argv[2]); x++ ) {
+            int temp=x;
+             int tempamount=stoi(argv[2]);
             cap>>framePre;
+            cout<<"loading "<<temp<<" / "<<tempamount<<" frame "<<endl;
         }
     }
     
@@ -861,7 +864,7 @@ int main( int argc, char** argv ){
                             
                             distance=findDistanceBetweenTwoPoint(roix,roiy,carLastX[i],carLastY[i]);
                             
-                            if(distance<carWidth[i])
+                            if(distance<carWidth[i]/2)
                             {
                                 cout<<"re track car "<<endl;
                                 carStatus[i]=1;
