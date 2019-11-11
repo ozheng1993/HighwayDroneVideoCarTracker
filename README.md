@@ -21,3 +21,13 @@ This repository contains OpenCV code and documents.
 * Press `a`  to add to object list. ps:this action will remove object from the frame too.
 ## Where is you data ##
 Go to the root folder and open the folder named as `file`.
+
+
+
+## Citation
+    @article{oyxcvtool,
+      Author = {Ou Zheng and Yina Wu},
+      Title = {OpenCV C++ Implementation of Drone View Car Tracker},
+      Journal = {https://github.com/ozheng1993/HighwayDroneVideoCarTracker},
+      Year = {2019}
+    }
