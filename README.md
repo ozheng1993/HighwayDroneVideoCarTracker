@@ -1,4 +1,4 @@
-# UAV Car tracker wiht openCV #
+# Highway Drone Video Car Tracker #
 This repository contains OpenCV code and documents.
 ## How to download this code ##
 ` git clone git@github.com:ozheng1993/OpenCVHighwayCarTracker.git `.
